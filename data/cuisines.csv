@@ -1,0 +1,121 @@
+cusine_list,cuisine_id
+modern indian,1
+north indian,2
+chinese,3
+momos,4
+biryani,5
+continental,6
+american,7
+fast food,8
+desserts,9
+ice cream,10
+beverages,11
+asian,12
+street food,13
+lucknowi,14
+mexican,15
+italian,16
+mughlai,17
+thai,18
+european,19
+seafood,20
+finger food,21
+cusine_category,22
+burger,23
+salad,24
+healthy food,25
+middle eastern,26
+lebanese,27
+kebab,28
+cafe,29
+sandwich,30
+maharashtrian,31
+south indian,32
+iranian,33
+bakery,34
+pizza,35
+mediterranean,36
+north eastern,37
+andhra,38
+mithai,39
+japanese,40
+sushi,41
+rolls,42
+parsi,43
+juices,44
+malwani,45
+french,46
+indian,47
+malaysian,48
+roast chicken,49
+bbq,50
+goan,51
+konkan,52
+mangalorean,53
+chettinad,54
+sindhi,55
+burmese,56
+coffee,57
+wraps,58
+korean,59
+gujarati,60
+bengali,61
+kerala,62
+vietnamese,63
+tex-mex,64
+singaporean,65
+indonesian,66
+turkish,67
+arabian,68
+british,69
+tea,70
+mishti,71
+tamil,72
+bar food,73
+awadhi,74
+rajasthani,75
+charcoal chicken,76
+steak,77
+spanish,78
+german,79
+vegetarian,80
+bohri,81
+greek,82
+cafe food,83
+afghan,84
+brazilian,85
+peruvian,86
+south american,87
+hyderabadi,88
+tibetan,89
+kashmiri,90
+cuisine varies,91
+assamese,92
+panini,93
+bihari,94
+oriental,95
+grill,96
+vegan,97
+bubble tea,98
+frozen yogurt,99
+cantonese,100
+paan,101
+mongolian,102
+fusion,103
+coffee and tea,104
+pub food,105
+asian fusion,106
+sri lankan,107
+belgian,108
+deli,109
+chili,110
+fried chicken,111
+israeli,112
+pakistani,113
+patisserie,114
+raw meats,115
+nepalese,116
+crepes,117
+armenian,118
+oriya,119
+hot dogs,120
