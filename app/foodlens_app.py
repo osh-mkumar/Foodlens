@@ -38,6 +38,22 @@ df = restaurant_cuisines.merge(restaurants, on="restaurant_id")
 df = df.merge(cuisines, on="cuisine_id")
 
 # ---------------------------
+# REGION → COORDS
+# ---------------------------
+region_coords = {
+    "Andheri": (19.1136, 72.8697),
+    "Bandra": (19.0596, 72.8295),
+    "Borivali": (19.2307, 72.8567),
+    "Dadar": (19.0183, 72.8424),
+    "Goregaon": (19.1550, 72.8490),
+    "Juhu": (19.1075, 72.8263),
+    "Malad": (19.1860, 72.8480),
+    "Powai": (19.1176, 72.9060),
+    "Thane": (19.2183, 72.9781),
+    "Vashi": (19.0771, 72.9986)
+}
+
+# ---------------------------
 # SIDEBAR
 # ---------------------------
 st.sidebar.markdown("## 🍽️ FoodLens")
@@ -45,7 +61,7 @@ st.sidebar.caption("Mumbai Food Intelligence")
 
 page = st.sidebar.selectbox(
     "Navigate",
-    ["Overview", "Insights", "Explorer", "Recommendations"]
+    ["Overview", "Insights", "Explorer", "Recommendations", "Map"]
 )
 
 st.sidebar.markdown("---")
@@ -120,14 +136,13 @@ if page == "Overview":
         y="cuisine_name",
         orientation="h",
         color="count",
-        color_continuous_scale="reds",
-        title="Top Cuisines"
+        color_continuous_scale="reds"
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
 # ==========================
-# INSIGHTS (ADVANCED CHARTS)
+# INSIGHTS
 # ==========================
 elif page == "Insights":
 
@@ -136,35 +151,16 @@ elif page == "Insights":
     col1, col2 = st.columns(2)
 
     with col1:
-        fig1 = px.scatter(
-            df,
-            x="price",
-            y="rating",
-            color="cuisine_name",
-            title="Price vs Rating",
-            opacity=0.6
-        )
+        fig1 = px.scatter(df, x="price", y="rating", opacity=0.6)
         st.plotly_chart(fig1, use_container_width=True)
 
     with col2:
-        fig2 = px.histogram(
-            df,
-            x="rating",
-            nbins=30,
-            title="Rating Distribution"
-        )
+        fig2 = px.histogram(df, x="rating", nbins=30)
         st.plotly_chart(fig2, use_container_width=True)
 
     st.divider()
 
-    fig3 = px.scatter(
-        df,
-        x="votes",
-        y="rating",
-        title="Votes vs Rating (Popularity vs Quality)",
-        opacity=0.6
-    )
-
+    fig3 = px.scatter(df, x="votes", y="rating", opacity=0.6)
     st.plotly_chart(fig3, use_container_width=True)
 
 # ==========================
@@ -174,44 +170,64 @@ elif page == "Explorer":
 
     st.subheader("🔍 Explore Restaurants")
 
-    unique_restaurants = filtered.drop_duplicates(subset=["restaurant_id"])
+    unique = filtered.drop_duplicates(subset=["restaurant_id"])
 
-    st.write(f"Showing {len(unique_restaurants)} restaurants")
+    st.write(f"Showing {len(unique)} restaurants")
 
     st.dataframe(
-        unique_restaurants[
-            ["name", "cuisine_name", "price", "rating", "region"]
-        ]
+        unique[["name", "cuisine_name", "price", "rating", "region"]]
         .sort_values(by="rating", ascending=False),
         use_container_width=True
     )
 
 # ==========================
-# RECOMMENDATIONS (NEW)
+# RECOMMENDATIONS
 # ==========================
 elif page == "Recommendations":
 
     st.subheader("🎯 Smart Recommendations")
 
-    budget = st.slider("Select Budget", 100, 5000, 1000)
+    budget = st.slider("Budget", 100, 5000, 1000)
 
     cuisine_choice = st.selectbox(
-        "Preferred Cuisine",
+        "Cuisine",
         sorted(df["cuisine_name"].dropna().unique())
     )
 
-    recommend = df[
+    region_choice = st.selectbox(
+        "Your Area",
+        sorted(df["region"].dropna().unique())
+    )
+
+    rec = df[
         (df["price"].fillna(9999) <= budget) &
-        (df["cuisine_name"] == cuisine_choice)
+        (df["cuisine_name"] == cuisine_choice) &
+        (df["region"] == region_choice)
     ]
 
-    recommend = recommend.drop_duplicates(subset=["restaurant_id"])
+    rec = rec.drop_duplicates(subset=["restaurant_id"])
+    rec = rec.sort_values(by="rating", ascending=False).head(5)
 
-    recommend = recommend.sort_values(by="rating", ascending=False).head(5)
-
-    st.write("### 🍴 Top Picks For You")
+    st.write(f"Top Picks in {region_choice}")
 
     st.dataframe(
-        recommend[["name", "price", "rating", "region"]],
+        rec[["name", "price", "rating", "region"]],
         use_container_width=True
     )
+
+# ==========================
+# MAP
+# ==========================
+elif page == "Map":
+
+    st.subheader("🗺️ Map View")
+
+    map_df = df.copy()
+
+    map_df["lat"] = map_df["region"].map(lambda x: region_coords.get(x, (None, None))[0])
+    map_df["lon"] = map_df["region"].map(lambda x: region_coords.get(x, (None, None))[1])
+
+    map_df = map_df.dropna(subset=["lat", "lon"])
+    map_df = map_df.drop_duplicates(subset=["restaurant_id"])
+
+    st.map(map_df[["lat", "lon"]])
