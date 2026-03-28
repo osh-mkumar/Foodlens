@@ -61,7 +61,7 @@ st.sidebar.caption("Mumbai Food Intelligence")
 
 page = st.sidebar.selectbox(
     "Navigate",
-    ["Overview", "Insights", "Explorer", "Recommendations", "Map"]
+    ["Overview", "Insights", "Explorer", "Recommendations"]
 )
 
 st.sidebar.markdown("---")
@@ -163,6 +163,29 @@ elif page == "Insights":
     fig3 = px.scatter(df, x="votes", y="rating", opacity=0.6)
     st.plotly_chart(fig3, use_container_width=True)
 
+    st.divider()
+    st.subheader("📍 Top Areas by Average Rating")
+
+    area_stats = (
+        df.groupby("region")
+        .agg(avg_rating=("rating", "mean"), count=("restaurant_id", "nunique"))
+        .dropna()
+        .sort_values(by="avg_rating", ascending=False)
+        .head(10)
+        .reset_index()
+    )
+
+    fig = px.bar(
+        area_stats,
+        x="avg_rating",
+        y="region",
+        orientation="h",
+        color="avg_rating",
+        color_continuous_scale="greens",
+        title="Top Rated Areas"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
 # ==========================
 # EXPLORER
 # ==========================
@@ -218,16 +241,3 @@ elif page == "Recommendations":
 # ==========================
 # MAP
 # ==========================
-elif page == "Map":
-
-    st.subheader("🗺️ Map View")
-
-    map_df = df.copy()
-
-    map_df["lat"] = map_df["region"].map(lambda x: region_coords.get(x, (None, None))[0])
-    map_df["lon"] = map_df["region"].map(lambda x: region_coords.get(x, (None, None))[1])
-
-    map_df = map_df.dropna(subset=["lat", "lon"])
-    map_df = map_df.drop_duplicates(subset=["restaurant_id"])
-
-    st.map(map_df[["lat", "lon"]])
