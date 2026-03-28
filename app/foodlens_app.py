@@ -23,19 +23,15 @@ h1, h2, h3 {
 """, unsafe_allow_html=True)
 
 # ---------------------------
-# SAFE PATH HANDLING (IMPORTANT)
+# LOAD DATA (SAFE PATH)
 # ---------------------------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 data_path = os.path.join(BASE_DIR, "data")
 
 restaurants = pd.read_csv(os.path.join(data_path, "restaurants.csv"))
 cuisines = pd.read_csv(os.path.join(data_path, "cuisines.csv"))
 restaurant_cuisines = pd.read_csv(os.path.join(data_path, "restaurant_cuisines.csv"))
 
-# ---------------------------
-# CLEAN + MERGE
-# ---------------------------
 cuisines.rename(columns={"cusine_list": "cuisine_name"}, inplace=True)
 
 df = restaurant_cuisines.merge(restaurants, on="restaurant_id")
@@ -49,14 +45,12 @@ st.sidebar.caption("Mumbai Food Intelligence")
 
 page = st.sidebar.selectbox(
     "Navigate",
-    ["Overview", "Insights", "Explorer"]
+    ["Overview", "Insights", "Explorer", "Recommendations"]
 )
 
 st.sidebar.markdown("---")
 
 # Filters
-st.sidebar.markdown("### 🎛 Filters")
-
 min_rating = st.sidebar.slider("⭐ Rating", 0.0, 5.0, 0.0)
 max_price = st.sidebar.slider("💰 Price", 100, 5000, 5000)
 
@@ -70,13 +64,10 @@ selected_cuisine = st.sidebar.selectbox(
     ["All"] + sorted(df["cuisine_name"].dropna().unique())
 )
 
-# ---------------------------
-# SEARCH
-# ---------------------------
 search = st.text_input("🔍 Search Restaurant")
 
 # ---------------------------
-# FILTERING (FIXED)
+# FILTERING
 # ---------------------------
 filtered = df[
     ((df["rating"].fillna(0)) >= min_rating) &
@@ -136,27 +127,45 @@ if page == "Overview":
     st.plotly_chart(fig, use_container_width=True)
 
 # ==========================
-# INSIGHTS
+# INSIGHTS (ADVANCED CHARTS)
 # ==========================
 elif page == "Insights":
 
-    st.subheader("🚨 Overhyped Restaurants")
+    st.subheader("📊 Advanced Insights")
 
-    overhyped = df[
-        (df["votes"] > 1000) & (df["rating"] < 3.5)
-    ][["name", "rating", "votes", "region"]].drop_duplicates(subset=["restaurant_id"])
+    col1, col2 = st.columns(2)
 
-    st.dataframe(overhyped, use_container_width=True)
+    with col1:
+        fig1 = px.scatter(
+            df,
+            x="price",
+            y="rating",
+            color="cuisine_name",
+            title="Price vs Rating",
+            opacity=0.6
+        )
+        st.plotly_chart(fig1, use_container_width=True)
+
+    with col2:
+        fig2 = px.histogram(
+            df,
+            x="rating",
+            nbins=30,
+            title="Rating Distribution"
+        )
+        st.plotly_chart(fig2, use_container_width=True)
 
     st.divider()
 
-    st.subheader("💎 Best Value Restaurants")
+    fig3 = px.scatter(
+        df,
+        x="votes",
+        y="rating",
+        title="Votes vs Rating (Popularity vs Quality)",
+        opacity=0.6
+    )
 
-    best_value = df[
-        (df["rating"] >= 4.5) & (df["price"] <= 800)
-    ][["name", "price", "rating", "region"]].drop_duplicates(subset=["restaurant_id"])
-
-    st.dataframe(best_value, use_container_width=True)
+    st.plotly_chart(fig3, use_container_width=True)
 
 # ==========================
 # EXPLORER
@@ -174,5 +183,35 @@ elif page == "Explorer":
             ["name", "cuisine_name", "price", "rating", "region"]
         ]
         .sort_values(by="rating", ascending=False),
+        use_container_width=True
+    )
+
+# ==========================
+# RECOMMENDATIONS (NEW)
+# ==========================
+elif page == "Recommendations":
+
+    st.subheader("🎯 Smart Recommendations")
+
+    budget = st.slider("Select Budget", 100, 5000, 1000)
+
+    cuisine_choice = st.selectbox(
+        "Preferred Cuisine",
+        sorted(df["cuisine_name"].dropna().unique())
+    )
+
+    recommend = df[
+        (df["price"].fillna(9999) <= budget) &
+        (df["cuisine_name"] == cuisine_choice)
+    ]
+
+    recommend = recommend.drop_duplicates(subset=["restaurant_id"])
+
+    recommend = recommend.sort_values(by="rating", ascending=False).head(5)
+
+    st.write("### 🍴 Top Picks For You")
+
+    st.dataframe(
+        recommend[["name", "price", "rating", "region"]],
         use_container_width=True
     )
