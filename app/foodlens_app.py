@@ -37,21 +37,6 @@ cuisines.rename(columns={"cusine_list": "cuisine_name"}, inplace=True)
 df = restaurant_cuisines.merge(restaurants, on="restaurant_id")
 df = df.merge(cuisines, on="cuisine_id")
 
-# ---------------------------
-# REGION → COORDS
-# ---------------------------
-region_coords = {
-    "Andheri": (19.1136, 72.8697),
-    "Bandra": (19.0596, 72.8295),
-    "Borivali": (19.2307, 72.8567),
-    "Dadar": (19.0183, 72.8424),
-    "Goregaon": (19.1550, 72.8490),
-    "Juhu": (19.1075, 72.8263),
-    "Malad": (19.1860, 72.8480),
-    "Powai": (19.1176, 72.9060),
-    "Thane": (19.2183, 72.9781),
-    "Vashi": (19.0771, 72.9986)
-}
 
 # ---------------------------
 # SIDEBAR
@@ -238,6 +223,3 @@ elif page == "Recommendations":
         use_container_width=True
     )
 
-# ==========================
-# MAP
-# ==========================
